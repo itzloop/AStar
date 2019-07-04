@@ -18,10 +18,6 @@ public class Node extends Circle implements Comparable<Node>{
             this.setFill(Color.BLACK);
         else
             this.setFill(Color.WHITE);
-        if(x == 1 && y == 1)
-            this.setFill(Color.RED);
-        if(x == GV.W && y == GV.H)
-            this.setFill(Color.GREEN);
         this.isObstacle = isObstacle;
     }
 

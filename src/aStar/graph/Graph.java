@@ -3,6 +3,7 @@ package aStar.graph;
 
 import aStar.GV;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -26,6 +27,16 @@ public class Graph {
                 node.setG(Double.MAX_VALUE);
                 node.setOnMouseClicked(event -> {
                     System.out.println(event);
+                    if(GV.start != null)
+                    {
+                        GV.target = (Node)event.getTarget();
+                        GV.target.setFill(Color.GREEN);
+                    }
+                    else
+                    {
+                        GV.start= (Node)event.getTarget();
+                        GV.start.setFill(Color.RED);
+                    }
                 });
                 adj.put(node, new LinkedHashSet<>());
                 nodes[i][j] = node;
@@ -70,23 +81,23 @@ public class Graph {
 
     }
 
-    private Stack<Node> drawPath(Map<Node , Node> cameFrom , Node current , Node Start){
+    private Stack<Node> drawPath(Map<Node , Node> cameFrom , Node current ){
         Stack<Node> totalPath = new Stack<>();
+        totalPath.push(current);
         while (cameFrom.containsKey(current) )
         {
-            totalPath.push(current);
-            System.out.println(current);
             current = cameFrom.get(current);
+            totalPath.push(current);
         }
-        totalPath.push(Start);
         return totalPath;
 
     }
     public Optional<Stack<Node>> AStar(Node start , Node target )
-    {
+        {
         Queue<Node> open = new PriorityQueue<>();
         Queue<Node> close = new PriorityQueue<>();
         Map<Node , Node> cameFrom = new HashMap<>();
+        Color color = Color.RED;
         open.add(start);
         start.setG(0);
         target.setFill(Color.GREEN);
@@ -100,33 +111,26 @@ public class Graph {
                 e.printStackTrace();
             }
             current = open.poll();
-            //TODO Fix this later
             if (current.equals(target))
             {
-                System.out.println("Done");
-                return Optional.ofNullable(drawPath(cameFrom , current , start));
-
+                return Optional.ofNullable(drawPath(cameFrom , current ));
             }
             close.add(current);
             for (Node neighbor : adj.get(current))
             {
-                if(!neighbor.isObstacle())
-                {
-                    if(close.contains(neighbor))
-                    {
-                        //neighbor.setFill(Color.WHITE);
+                if(!neighbor.isObstacle()) {
+                    if (close.contains(neighbor)) {
+                        setColor(neighbor , start , target);
                         continue;
                     }
-                    double tentativeGScore= current.getG() + current.distance(neighbor);
-                    if(!open.contains(neighbor))
+                    double tentativeGScore = current.getG() + current.distance(neighbor);
+                    if (!open.contains(neighbor))
                         open.add(neighbor);
-                    else if(tentativeGScore >= neighbor.getG())
-                    {
-                        //neighbor.setFill(Color.WHITE);
+                    else if (tentativeGScore >= neighbor.getG()) {
+                        setColor(neighbor , start , target);
                         continue;
                     }
                     neighbor.setFill(Color.BLUE);
-
                     cameFrom.put(neighbor, current);
                     neighbor.setG(tentativeGScore);
                     neighbor.setF(neighbor.getG() + neighbor.distance(target));
@@ -140,6 +144,19 @@ public class Graph {
     }
 
 
+    private void setColor(Node neighbor , Node start , Node target)
+    {
+        int green = (int)((neighbor.distance(start) / start.distance(target)) * 255);
+        int red = (int)((Math.abs(1 - neighbor.distance(start) / start.distance(target))) * 255);
+        if (green> 255)
+            green = 255;
+        if(red> 255)
+            red = 255;
+        System.out.println(red +"|"+ green);
+        GV.nodeColor = Color.rgb( red, green, 0);
+
+        neighbor.setFill(GV.nodeColor);
+    }
     public boolean isObstacle()
     {
         double ratio = Math.random()*GV.maxRatio;
