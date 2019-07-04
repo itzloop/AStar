@@ -58,6 +58,34 @@ public class Views extends Stage {
         });
 
 
+        Button btnDijkstra =  new Button("Dijkstra");
+        btnDijkstra.setOnAction(event -> {
+            new Thread(() -> {
+                Optional<List<Node>> path= graph.dijkstra(GV.start , GV.target);
+                if(GV.start == null || GV.target == null)
+                    return;
+                if(path.isPresent())
+                {
+                    Node A, B;
+                    for (int i = 1; i < path.get().size(); i++) {
+                        A = path.get().get(i-1);
+                        B = path.get().get(i);
+                        A.setFill(Color.RED);
+                        B.setFill(Color.RED);
+                        Line line = new Line(B.getCenterX() , B.getCenterY() , A.getCenterX() , A.getCenterY());
+                        line.setStrokeWidth(5);
+                        line.setStroke(Color.CYAN);
+                        Platform.runLater(()->pane.getChildren().add(line));
+                    }
+                }else {
+                    Platform.runLater(() -> new Alert(Alert.AlertType.CONFIRMATION,"No Path Found").showAndWait());
+                }
+
+                GV.start = null;
+                GV.target = null;
+            }).start();
+        });
+
         Button btnReset = new Button("reset");
         btnReset.setOnAction(event -> {
             graph = new Graph(GV.W , GV.H);
@@ -69,7 +97,7 @@ public class Views extends Stage {
             GV.start = null;
             GV.target = null;
         });
-        HBox hBox = new HBox(btnRun, btnReset);
+        HBox hBox = new HBox(btnRun,btnDijkstra, btnReset);
         borderPane.setBottom(hBox);
 
         for (Node n : graph.nodes())

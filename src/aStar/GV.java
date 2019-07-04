@@ -10,7 +10,7 @@ public class GV {
     public static final double screenHeight = Screen.getPrimary().getBounds().getHeight();
     public static final double radius = 5;
     public static final double maxRatio= 50000;
-    public static final double obstacleRatio = maxRatio/5;
+    public static final double obstacleRatio = maxRatio/2;
     public static final double nodeDistance= 20;
     public static final int W = 95;
     public static final int H = 50;

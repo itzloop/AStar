@@ -86,6 +86,5 @@ public class Node extends Circle implements Comparable<Node>{
         if(this.f > that.f) return 1;
         else if(this.f < that.f) return -1;
         else return 0;
-
     }
 }

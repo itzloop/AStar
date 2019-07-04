@@ -2,6 +2,7 @@ package aStar.graph;
 
 
 import aStar.GV;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.layout.Pane;
@@ -105,11 +106,6 @@ public class Graph {
         Node current;
         while (!open.isEmpty())
         {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             current = open.poll();
             if (current.equals(target))
             {
@@ -134,13 +130,77 @@ public class Graph {
                     cameFrom.put(neighbor, current);
                     neighbor.setG(tentativeGScore);
                     neighbor.setF(neighbor.getG() + neighbor.distance(target));
+                }
+            }
+        }
+        return Optional.empty();
+
+    }
+
+    public Optional<List<Node>> dijkstra(Node start,Node target)
+    {
+
+        Map<Node , Double> distTo = new HashMap<>();
+        Map<Node , Node> edgeTo = new HashMap<>();
+
+        Queue<Node> nodes = new PriorityQueue<>((n1, n2) -> {
+            if(distTo.get(n1) > distTo.get(n2)) return 1;
+            else if(distTo.get(n1) < distTo.get(n2)) return -1;
+            else return 0;
+        });
+        for (Node node : nodes())
+        {
+            distTo.put(node , Double.MAX_VALUE);
+        }
+        distTo.put(start , 0d);
+        nodes.add(start);
+
+        while (!nodes.isEmpty())
+        {
+            Node current = nodes.poll();
+
+            System.out.println(nodes.size());
+            if(current.equals(target))
+            {
+                System.out.println("Done");
+                List<Node> path = new ArrayList<>();
+                path.add(current);
+                while (edgeTo.containsKey(current) )
+                {
+                    current = edgeTo.get(current);
+                    path.add(current);
+                }
+                for (Node node : path)
+                {
+                    node.setFill(Color.RED);
+                }
+                return Optional.ofNullable(path);
+            }
+            for (Node node : adj.get(current))
+            {
+                if(!nodes.contains(node) && !node.isObstacle())
+                {
+
+                    double newDist =  distTo.get(current) + node.distance(current);
+                    if(newDist < distTo.get(node))
+                    {
+                        setColor(node,start,target);
+                        distTo.put(node ,newDist);
+                        edgeTo.put(node, current);
+                        if(nodes.contains(node))
+                        {
+                            node.setFill(Color.WHITE);
+                            nodes.remove(node);
+                        }
+                        else
+                            nodes.add(node);
+                    }
 
                 }
             }
 
         }
         return Optional.empty();
-
     }
 
 
@@ -166,14 +226,8 @@ public class Graph {
             return false;
     }
 
-//    public void addEdge(Edge e)
-//    {
-//        Node v = e.either() , w = e.other(v);
-//        v.setObstacle(false);
-//        w.setObstacle(false);
-//        adj.get(v).add(e);
-//        adj.get(w).add(e);
-//    }
+
+
 
     public int getV() {
         return V;
