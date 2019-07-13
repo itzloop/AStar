@@ -106,6 +106,11 @@ public class Graph {
         Node current;
         while (!open.isEmpty())
         {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             current = open.poll();
             if (current.equals(target))
             {
@@ -114,6 +119,7 @@ public class Graph {
             close.add(current);
             for (Node neighbor : adj.get(current))
             {
+
                 if(!neighbor.isObstacle()) {
                     if (close.contains(neighbor)) {
                         setColor(neighbor , start , target);
@@ -157,6 +163,11 @@ public class Graph {
 
         while (!nodes.isEmpty())
         {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             Node current = nodes.poll();
 
             System.out.println(nodes.size());
