@@ -1,6 +1,5 @@
-package aStar.graph;
+package astar.graph;
 
-import javafx.scene.Group;
 import javafx.scene.shape.Line;
 
 

@@ -1,15 +1,8 @@
-package aStar.graph;
+package astar.graph;
 
 
-import aStar.GV;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.layout.Pane;
+import astar.GV;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
-import jdk.nashorn.internal.runtime.regexp.joni.constants.OPCode;
-
 import java.util.*;
 
 public class Graph {
@@ -74,12 +67,6 @@ public class Graph {
                 }catch (Exception e){}
             }
         }
-
-
-
-
-
-
     }
 
     private Stack<Node> drawPath(Map<Node , Node> cameFrom , Node current ){
@@ -98,7 +85,6 @@ public class Graph {
         Queue<Node> open = new PriorityQueue<>();
         Queue<Node> close = new PriorityQueue<>();
         Map<Node , Node> cameFrom = new HashMap<>();
-        Color color = Color.RED;
         open.add(start);
         start.setG(0);
         target.setFill(Color.GREEN);

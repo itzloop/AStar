@@ -1,13 +1,12 @@
-package aStar.api;
+package astar.api;
 
-import aStar.GV;
-import aStar.graph.Graph;
-import aStar.graph.Node;
+import astar.GV;
+import astar.graph.Graph;
+import astar.graph.Node;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -20,8 +19,6 @@ import java.util.*;
 
 public class Views extends Stage {
     private Graph graph;
-    private Pane pane;
-
 
     public Views()
     {

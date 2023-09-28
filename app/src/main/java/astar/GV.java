@@ -1,7 +1,7 @@
-package aStar;
+package astar;
 
-import aStar.graph.Node;
-import aStar.graph.Vector2D;
+import astar.graph.Node;
+import astar.graph.Vector2D;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 

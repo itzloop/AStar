@@ -1,4 +1,4 @@
-package aStar.graph;
+package astar.graph;
 
 public class Vector2D {
     private double x;

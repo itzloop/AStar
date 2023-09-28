@@ -1,6 +1,6 @@
-package aStar.graph;
+package astar.graph;
 
-import aStar.GV;
+import astar.GV;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
