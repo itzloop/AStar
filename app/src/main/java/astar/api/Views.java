@@ -1,9 +1,12 @@
 package astar.api;
 
-import astar.GV;
+import astar.Constants;
+import astar.exceptions.AlreadyRunningException;
+import astar.exceptions.NoPathFoundException;
 import astar.graph.Graph;
 import astar.graph.Node;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -15,97 +18,174 @@ import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 import java.util.*;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Views extends Stage {
     private Graph graph;
+    private Pane pane;
+    private int width, height;
+    private double radius;
+    private Node start, target;
+    private Button btnAStar, btnDijkstra, btnReArrange, btnClear;
+    private HBox bottomContainer;
 
-    public Views()
-    {
-        graph = new Graph(GV.W , GV.H);
-        Pane pane = new Pane();
-        BorderPane borderPane = new BorderPane();
+    private AtomicBoolean isRunning = new AtomicBoolean(false);
+
+    public Views(int width, int height, double radius) {
+        this.graph = new Graph(width, height);
+        this.pane = new Pane();
+        this.width = width;
+        this.height = height;
+        this.radius = radius;
+
+        // set node handlers
+        for (var node : this.graph.nodes()) {
+            node.setOnMouseClicked(event -> {
+                System.out.println(event);
+                if (this.start != null) {
+                    this.target = (Node) event.getTarget();
+                    this.target.setFill(Color.GREEN);
+                } else {
+                    this.start = (Node) event.getTarget();
+                    this.start.setFill(Color.RED);
+                }
+            });
+        }
+
+        var borderPane = new BorderPane();
         borderPane.setCenter(pane);
-        Button btnRun = new Button("run A Star");
-        btnRun.setOnAction( event -> {
-            new Thread(() -> {
-                if(GV.start == null || GV.target == null)
-                    return;
-                Optional<Stack<Node>> nodes = graph.AStar(GV.start , GV.target);
-                if(nodes.isPresent())
-                {
-                    Node A, B;
-                    for (int i = 1; i < nodes.get().size(); i++) {
-                        A = nodes.get().get(i-1);
-                        B = nodes.get().get(i);
-                        A.setFill(Color.RED);
-                        B.setFill(Color.RED);
-                        Line line = new Line(B.getCenterX() , B.getCenterY() , A.getCenterX() , A.getCenterY());
-                        line.setStrokeWidth(5);
-                        line.setStroke(Color.CYAN);
-                        Platform.runLater(()->pane.getChildren().add(line));
-                    }
-                }
-                else {
-                    Platform.runLater(() -> new Alert(Alert.AlertType.CONFIRMATION,"No Path Found").showAndWait());
-                }
-                GV.start = null;
-                GV.target = null;
-            }).start();
-        });
+        this.btnAStar = new Button("run A Star");
+        this.btnAStar.setOnAction(event -> this.aStar(event));
 
+        this.btnDijkstra = new Button("Dijkstra");
+        this.btnDijkstra.setOnAction(event -> this.dijkstra(event));
 
-        Button btnDijkstra =  new Button("Dijkstra");
-        btnDijkstra.setOnAction(event -> {
-            new Thread(() -> {
-                Optional<List<Node>> path= graph.dijkstra(GV.start , GV.target);
-                if(GV.start == null || GV.target == null)
-                    return;
-                if(path.isPresent())
-                {
-                    Node A, B;
-                    for (int i = 1; i < path.get().size(); i++) {
-                        A = path.get().get(i-1);
-                        B = path.get().get(i);
-                        A.setFill(Color.RED);
-                        B.setFill(Color.RED);
-                        Line line = new Line(B.getCenterX() , B.getCenterY() , A.getCenterX() , A.getCenterY());
-                        line.setStrokeWidth(5);
-                        line.setStroke(Color.CYAN);
-                        Platform.runLater(()->pane.getChildren().add(line));
-                    }
-                }else {
-                    Platform.runLater(() -> new Alert(Alert.AlertType.CONFIRMATION,"No Path Found").showAndWait());
-                }
+        this.btnReArrange = new Button("rearrange");
+        this.btnReArrange.setOnAction(event -> this.reArrange(event));
 
-                GV.start = null;
-                GV.target = null;
-            }).start();
-        });
+        this.btnClear = new Button("clear");
+        this.btnClear.setOnAction(event -> this.clear(event));
+        this.bottomContainer = new HBox(this.btnAStar, this.btnDijkstra, this.btnReArrange, this.btnClear);
+        borderPane.setBottom(this.bottomContainer);
 
-        Button btnReset = new Button("reset");
-        btnReset.setOnAction(event -> {
-            graph = new Graph(GV.W , GV.H);
-            pane.getChildren().clear();
-            for (Node n : graph.nodes())
-            {
-                pane.getChildren().add(n);
-            }
-            GV.start = null;
-            GV.target = null;
-        });
-        HBox hBox = new HBox(btnRun,btnDijkstra, btnReset);
-        borderPane.setBottom(hBox);
-
-        for (Node n : graph.nodes())
-        {
+        for (Node n : graph.nodes()) {
             pane.getChildren().add(n);
         }
 
-
-        Scene scene = new Scene(borderPane , GV.W*GV.radius , GV.H*GV.radius);
+        Scene scene = new Scene(borderPane, this.width * this.radius, this.height * this.radius);
         this.setScene(scene);
         this.setTitle("A-Star");
-        this.setFullScreen(true);
+        this.setMaximized(true);
+    }
+
+    private void aStar(ActionEvent event) {
+        if (this.isRunning.getAndSet(true)) {
+            return;
+        }
+
+        setButtonsEnable(false);
+
+        new Thread(() -> {
+            try {
+                if (this.start == null || this.target == null)
+                    return;
+                Stack<Node> nodes = graph.AStar(this.start, this.target);
+                Platform.runLater(() -> {
+                    Node a, b;
+                    for (int i = 1; i < nodes.size(); i++) {
+                        a = nodes.get(i - 1);
+                        b = nodes.get(i);
+                        a.setFill(Color.RED);
+                        b.setFill(Color.RED);
+                        Line line = new Line(b.getCenterX(), b.getCenterY(), a.getCenterX(), a.getCenterY());
+                        line.setStrokeWidth(5);
+                        line.setStroke(Color.CYAN);
+                        pane.getChildren().add(line);
+                    }
+                });
+
+                this.start = null;
+                this.target = null;
+            } catch (NoPathFoundException e) {
+                Platform.runLater(() -> new Alert(Alert.AlertType.CONFIRMATION, e.getMessage()).showAndWait());
+            } catch (AlreadyRunningException e) {
+                Platform.runLater(() -> new Alert(Alert.AlertType.CONFIRMATION, e.getMessage()).showAndWait());
+                return;
+            } finally {
+                setButtonsEnable(true);
+                this.isRunning.getAndSet(false);
+            }
+        }).start();
+    }
+
+    private void dijkstra(ActionEvent event) {
+        if (this.isRunning.getAndSet(true)) {
+            return;
+        }
+
+        setButtonsEnable(false);
+
+        new Thread(() -> {
+            try {
+                List<Node> path = graph.dijkstra(this.start, this.target);
+                if (this.start == null || this.target == null)
+                    return;
+
+                Platform.runLater(() -> {
+                    Node a, b;
+                    for (int i = 1; i < path.size(); i++) {
+                        a = path.get(i - 1);
+                        b = path.get(i);
+                        a.setFill(Color.RED);
+                        b.setFill(Color.RED);
+                        Line line = new Line(b.getCenterX(), b.getCenterY(), a.getCenterX(), a.getCenterY());
+                        line.setStrokeWidth(5);
+                        line.setStroke(Color.CYAN);
+                        this.pane.getChildren().add(line);
+                    }
+                });
+
+                this.start = null;
+                this.target = null;
+            } catch (NoPathFoundException e) {
+                System.out.println(e.getMessage());
+                Platform.runLater(() -> new Alert(Alert.AlertType.CONFIRMATION, e.getMessage()).showAndWait());
+            } catch (AlreadyRunningException e) {
+                return;
+            } finally {
+                setButtonsEnable(true);
+                this.isRunning.getAndSet(false);
+            }
+
+        }).start();
+    }
+
+    private void reArrange(ActionEvent event) {
+        this.graph.ReArrange();
+        this.start = null;
+        this.target = null;
+        this.removePath();
+    }
+
+    private void clear(ActionEvent event) {
+        this.graph.Clear();
+        this.start = null;
+        this.target = null;
+        this.removePath();
+    }
+
+    private void removePath() {
+        var childrenToRemove = new ArrayList<Line>();
+        for (var child : this.pane.getChildren()) {
+            if (child instanceof Line) {
+                childrenToRemove.add((Line) child);
+            }
+        }
+
+        this.pane.getChildren().removeAll(childrenToRemove);
+    }
+
+    private void setButtonsEnable(boolean enable) {
+        this.bottomContainer.setDisable(!enable);
     }
 }

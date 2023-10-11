@@ -75,3 +75,5 @@ Graphs/
 
 # Ignore Gradle build output directory
 build
+
+.vscode
