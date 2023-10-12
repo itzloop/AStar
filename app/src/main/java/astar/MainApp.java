@@ -10,9 +10,9 @@ public class MainApp extends Application {
     public void start(Stage primaryStage) throws Exception {
         double screenWidth = Screen.getPrimary().getBounds().getWidth();
         double screenHeight = Screen.getPrimary().getBounds().getHeight();
-        var horizontalDots = (int) ((screenWidth) / (Constants.nodeDistance));
-        var verticalDots = (int) ((screenHeight) / (Constants.nodeDistance));
-        primaryStage = new Views(horizontalDots - 1, verticalDots - 6, Constants.radius);
+        var horizontalDots = (int) ((screenWidth) / (Constants.NodeDistance));
+        var verticalDots = (int) ((screenHeight) / (Constants.NodeDistance));
+        primaryStage = new Views(horizontalDots - 1, verticalDots - 6, Constants.Radius);
         primaryStage.show();
     }
 

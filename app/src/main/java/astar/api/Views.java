@@ -7,10 +7,14 @@ import astar.graph.Graph;
 import astar.graph.Node;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -30,10 +34,20 @@ public class Views extends Stage {
     private HBox bottomContainer;
 
     private AtomicBoolean isRunning = new AtomicBoolean(false);
+    private AtomicBoolean isChoosingStart = new AtomicBoolean(true);
 
     public Views(int width, int height, double radius) {
         this.graph = new Graph(width, height);
         this.pane = new Pane();
+        BackgroundFill backgroundFill = new BackgroundFill(
+                Constants.BackgroupColor,
+                new CornerRadii(0),
+                new Insets(0));
+
+        Background background = new Background(backgroundFill);
+
+        this.pane.setBackground(background);
+
         this.width = width;
         this.height = height;
         this.radius = radius;
@@ -42,12 +56,20 @@ public class Views extends Stage {
         for (var node : this.graph.nodes()) {
             node.setOnMouseClicked(event -> {
                 System.out.println(event);
-                if (this.start != null) {
-                    this.target = (Node) event.getTarget();
-                    this.target.setFill(Color.GREEN);
-                } else {
+                if (isChoosingStart.getAndSet(false)) {
+                    if (this.start != null) {
+                        this.start.setObstacle(this.start.isObstacle());
+                    }
                     this.start = (Node) event.getTarget();
                     this.start.setFill(Color.RED);
+                } else {
+                    isChoosingStart.set(true);
+                    if (this.target != null) {
+                        this.target.setObstacle(this.target.isObstacle());
+                    }
+
+                    this.target = (Node) event.getTarget();
+                    this.target.setFill(Color.GREEN);
                 }
             });
         }

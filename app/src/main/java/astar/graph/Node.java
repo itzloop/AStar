@@ -1,7 +1,6 @@
 package astar.graph;
 
 import astar.Constants;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 public class Node extends Circle implements Comparable<Node> {
@@ -10,15 +9,11 @@ public class Node extends Circle implements Comparable<Node> {
     private double f, g, h;
 
     public Node(int label, double x, double y, boolean isObstacle) {
-        super(Constants.radius);
-        this.setCenterX(x * Constants.nodeDistance);
-        this.setCenterY(y * Constants.nodeDistance);
+        super(Constants.Radius);
+        this.setCenterX(x * Constants.NodeDistance);
+        this.setCenterY(y * Constants.NodeDistance);
         this.label = label;
-        if (isObstacle)
-            this.setFill(Color.BLACK);
-        else
-            this.setFill(Color.WHITE);
-        this.isObstacle = isObstacle;
+        this.setObstacle(isObstacle);
     }
 
     public int getLabel() {
@@ -59,14 +54,12 @@ public class Node extends Circle implements Comparable<Node> {
 
     public void setObstacle(boolean obstacle) {
         if (obstacle) {
-            this.setFill(Color.BLACK);
-
+            this.setFill(Constants.ObstacleColor);
         } else {
-            this.setFill(Color.WHITE);
-
+            this.setFill(Constants.DotColor);
         }
-        isObstacle = obstacle;
 
+        isObstacle = obstacle;
     }
 
     public double distance(Node node) {

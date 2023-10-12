@@ -4,7 +4,6 @@ import astar.Constants;
 import astar.exceptions.AlreadyRunningException;
 import astar.exceptions.NoPathFoundException;
 import javafx.scene.paint.Color;
-import javafx.util.Pair;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -316,8 +315,8 @@ public class Graph {
     }
 
     public boolean isObstacle() {
-        double ratio = Math.random() * Constants.maxRatio;
-        if (ratio < Constants.obstacleRatio)
+        double ratio = Math.random() * Constants.MaxRatio;
+        if (ratio < Constants.ObstacleRatio)
             return true;
         else
             return false;
